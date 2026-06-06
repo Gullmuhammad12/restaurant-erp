@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h6 class="text-secondary">Today's Orders</h6>
+                <h2 class="text-white">{{ total_orders_today|default:"0" }}</h2>
+                <small class="text-success"><i class="fas fa-chart-line"></i> orders today</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h6 class="text-secondary">Revenue Today</h6>
+                <h2 class="text-white">${{ revenue_today|floatformat:2|default:"0.00" }}</h2>
+                <small class="text-success"><i class="fas fa-dollar-sign"></i> net sales</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h6 class="text-secondary">Active Orders</h6>
+                <h2 class="text-white">{{ active_orders|default:"0" }}</h2>
+                <small class="text-warning"><i class="fas fa-clock"></i> in kitchen</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h6 class="text-secondary">Low Stock Items</h6>
+                <h2 class="text-white">{{ low_stock_items|default:"0" }}</h2>
+                <small class="text-danger"><i class="fas fa-exclamation-triangle"></i> need attention</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-black border-secondary">
+                <h5 class="text-white">Monthly Revenue Trend</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-black border-secondary">
+                <h5 class="text-white">Top Selling Items</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topItemsChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Monthly Revenue Chart
+        const months = {{ months|safe|default:"[]" }};
+        const salesData = {{ sales_data|safe|default:"[]" }};
+        const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
+        if (revenueCtx && months.length && salesData.length) {
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: salesData,
+                        borderColor: '#00E5FF',
+                        backgroundColor: 'rgba(0,229,255,0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `$${ctx.raw.toFixed(2)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { grid: { color: '#2C3E50' }, ticks: { color: '#ccc' } },
+                        x: { ticks: { color: '#ccc' } }
+                    }
+                }
+            });
+        } else if (revenueCtx) {
+            revenueCtx.fillStyle = '#ccc';
+            revenueCtx.fillText('No data available', 50, 50);
+        }
+
+        // Top Selling Items Chart
+        const topItems = {{ top_items|safe|default:"[]" }};
+        const itemNames = topItems.map(i => i.menu_item__name);
+        const itemQtys = topItems.map(i => i.total_qty);
+        const topCtx = document.getElementById('topItemsChart')?.getContext('2d');
+        if (topCtx && itemNames.length && itemQtys.length) {
+            new Chart(topCtx, {
+                type: 'bar',
+                data: {
+                    labels: itemNames,
+                    datasets: [{
+                        label: 'Quantity Sold',
+                        data: itemQtys,
+                        backgroundColor: '#00E5FF'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: { grid: { color: '#2C3E50' }, ticks: { color: '#ccc' } },
+                        y: { ticks: { color: '#ccc' } }
+                    }
+                }
+            });
+        } else if (topCtx) {
+            topCtx.fillStyle = '#ccc';
+            topCtx.fillText('No sales data', 50, 50);
+        }
+    });
+</script>
+{% endblock %}

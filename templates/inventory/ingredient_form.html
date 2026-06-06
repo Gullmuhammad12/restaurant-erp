@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}{{ object|yesno:"Update Ingredient,Add Ingredient" }}{% endblock %}
+{% block content %}
+<div class="card bg-black border-secondary mx-auto" style="max-width: 600px;">
+    <div class="card-header bg-black border-secondary">
+        <h4 class="text-white">{{ object|yesno:"Update,Add" }} Ingredient</h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div id="stockWarning" class="alert alert-warning" style="display:none;"></div>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'core:inventory_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

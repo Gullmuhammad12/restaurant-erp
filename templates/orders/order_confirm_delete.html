@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Delete Order{% endblock %}
+{% block content %}
+<div class="card bg-black border-secondary mx-auto" style="max-width: 500px;">
+    <div class="card-header bg-black border-secondary">
+        <h4 class="text-white">Confirm Deletion</h4>
+    </div>
+    <div class="card-body">
+        <p class="text-white">Are you sure you want to delete order <strong>{{ object.slug|slice:":8" }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, delete</button>
+            <a href="{% url 'core:order_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

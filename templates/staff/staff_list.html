@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Staff{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-white"><i class="fas fa-users"></i> Staff Members</h2>
+    {% if user.role == 'admin' %}
+        <a href="{% url 'core:staff_create' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Staff</a>
+    {% endif %}
+</div>
+<div class="filter-bar p-3 mb-4 rounded bg-black border-secondary">
+    <div class="row"><div class="col-md-4"><input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary" placeholder="Search name or email"></div><div class="col-md-2"><button id="resetFilters" class="btn btn-secondary">Reset</button></div></div>
+</div>
+<div class="table-responsive">
+    <table class="table table-dark table-hover">
+        <thead class="table-secondary"><tr><th>Name</th><th>Email</th><th>Shift</th><th>Phone</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for staff in staff_members %}
+            <tr>
+                <td>{{ staff.user.full_name }}</td>
+                <td>{{ staff.user.email }}</td>
+                <td>{{ staff.get_shift_display }}</td>
+                <td>{{ staff.phone|default:"—" }}</td>
+                <td>
+                    {% if user.role == 'admin' %}
+                    <a href="{% url 'core:staff_update' pk=staff.pk %}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'core:staff_delete' pk=staff.pk %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                    {% else %}<span class="text-muted">View only</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No staff records.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include 'includes/pagination.html' %}
+{% endblock %}

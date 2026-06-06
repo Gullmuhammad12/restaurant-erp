@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Kitchen Queue{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-white"><i class="fas fa-fire"></i> Live Kitchen Queue</h2>
+    <span class="badge bg-primary fs-6">Active Orders: {{ active_orders_count }}</span>
+</div>
+<div id="kitchenGrid" class="row g-4"></div>
+
+<script>
+function loadKitchen() {
+    $.get('/api/kitchen/queue/', function(data) {
+        const container = $('#kitchenGrid');
+        container.empty();
+        if (!data.length) {
+            container.html('<div class="col-12"><div class="alert alert-info">🍽️ No active orders in kitchen.</div></div>');
+            return;
+        }
+        const orders = {};
+        data.forEach(item => {
+            if (!orders[item.order__slug]) orders[item.order__slug] = { ...item, items: [] };
+            orders[item.order__slug].items.push(item);
+        });
+        for (const slug in orders) {
+            const order = orders[slug];
+            const card = $(`
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between">
+                            <strong>🍜 Order #${slug.slice(0,8)}</strong>
+                            <span class="badge bg-info">${Math.round(order.elapsed_minutes || 0)} min</span>
+                        </div>
+                        <div class="card-body">
+                            <p><i class="fas fa-${order.order__order_type === 'dine_in' ? 'chair' : (order.order__order_type === 'takeaway' ? 'box' : 'truck')}"></i> ${order.order__order_type.replace('_',' ')}</p>
+                            ${order.order__table_number ? `<p>📌 Table: ${order.order__table_number}</p>` : ''}
+                            <hr>
+                            <div class="items-list"></div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-sm btn-success w-100 update-order-status" data-slug="${slug}" data-status="completed">✅ Mark Completed</button>
+                        </div>
+                    </div>
+                </div>
+            `);
+            order.items.forEach(item => {
+                card.find('.items-list').append(`
+                    <div class="border-bottom pb-2 mb-2">
+                        <strong>${item.menu_item__name}</strong> x${item.quantity}
+                        ${item.special_instructions ? `<div class="small text-secondary"><i class="fas fa-note-sticky"></i> ${item.special_instructions}</div>` : ''}
+                    </div>
+                `);
+            });
+            container.append(card);
+        }
+        $('.update-order-status').click(function() {
+            const slug = $(this).data('slug');
+            const status = $(this).data('status');
+            $.post(`/api/order/${slug}/status/`, {status: status}, function() {
+                loadKitchen();
+                showToast('Order status updated', 'success');
+            }).fail(() => showToast('Error updating order', 'danger'));
+        });
+    });
+}
+loadKitchen();
+setInterval(loadKitchen, 10000);
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}{{ object|yesno:"Update Order,Create Order" }}{% endblock %}
+{% block content %}
+<div class="card bg-black border-secondary">
+    <div class="card-header bg-black border-secondary">
+        <h4 class="text-white">{{ object|yesno:"Update Order,New Order" }}</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" id="orderForm">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label text-white">Table Number</label>
+                    {{ form.table_number }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label text-white">Order Type</label>
+                    {{ form.order_type }}
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <h5 class="text-white">Order Items</h5>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <select id="menuItemSelect" class="form-select bg-dark text-white border-secondary">
+                        <option value="">Select menu item...</option>
+                        {% for item in menu_items %}
+                            <option value="{{ item.id }}" data-price="{{ item.price }}">{{ item.name }} - ${{ item.price }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2"><button type="button" id="addMenuItem" class="btn btn-primary">Add Item</button></div>
+            </div>
+            <div id="orderItemsContainer"></div>
+            <div class="row mt-3">
+                <div class="col-md-6 offset-md-6">
+                    <table class="table table-dark">
+                        <tr><th>Subtotal:</th><td>$<span id="subtotal">0.00</span></td></tr>
+                        <tr><th>Tax (10%):</th><td>$<span id="tax">0.00</span></td></tr>
+                        <tr><th>Net Total:</th><td><strong>$<span id="total">0.00</span></strong></td></tr>
+                    </table>
+                </div>
+            </div>
+            <input type="hidden" name="total_amount" id="id_total_amount">
+            <button type="submit" class="btn btn-success">Save Order</button>
+            <a href="{% url 'core:order_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

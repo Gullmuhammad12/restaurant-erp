@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Orders{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-white"><i class="fas fa-shopping-cart"></i> Orders</h2>
+    <a href="{% url 'core:order_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Order</a>
+</div>
+
+<div class="filter-bar p-3 mb-4 rounded bg-black border-secondary">
+    <div class="row g-2">
+        <div class="col-md-3">
+            <input type="text" id="searchInput" class="form-control bg-dark text-white border-secondary" placeholder="Search by ID/Table">
+        </div>
+        <div class="col-md-2">
+            <select id="statusFilter" class="form-select bg-dark text-white border-secondary">
+                <option value="">All Status</option>
+                {% for val, label in status_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select id="typeFilter" class="form-select bg-dark text-white border-secondary">
+                <option value="">All Types</option>
+                {% for val, label in order_type_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="date" id="dateFrom" class="form-control bg-dark text-white border-secondary">
+        </div>
+        <div class="col-md-2">
+            <input type="date" id="dateTo" class="form-control bg-dark text-white border-secondary">
+        </div>
+        <div class="col-md-1">
+            <button id="resetFilters" class="btn btn-secondary w-100">Reset</button>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-dark table-hover align-middle">
+        <thead class="table-secondary">
+            <tr>
+                <th>Order ID</th>
+                <th>Table</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr data-status="{{ order.status }}" data-type="{{ order.order_type }}">
+                <td>{{ order.slug|slice:":8" }}</td>
+                <td>{{ order.table_number|default:"-" }}</td>
+                <td>{{ order.get_order_type_display }}</td>
+                <td>
+                    <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'preparing' %}info{% elif order.status == 'completed' %}success{% else %}danger{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </td>
+                <td>${{ order.net_amount|floatformat:2 }}</td>
+                <td>{{ order.created_at|date:"M d, H:i" }}</td>
+                <td>
+                    <a href="{% url 'core:order_update' slug=order.slug %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'core:order_delete' slug=order.slug %}" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-center text-white">No orders found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include 'includes/pagination.html' %}
+{% endblock %}

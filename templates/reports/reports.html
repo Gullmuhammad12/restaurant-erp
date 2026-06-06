@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="card bg-black border-secondary">
+    <div class="card-header bg-black border-secondary">
+        <h4 class="text-white">Monthly Sales Report</h4>
+    </div>
+    <div class="card-body">
+        <canvas id="monthlyChart" height="100"></canvas>
+        <div class="mt-4">
+            <button id="exportExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Export Orders to Excel</button>
+        </div>
+    </div>
+</div>
+<script>
+    const months = {{ months|safe }};
+    const revenue = {{ revenue_data|safe }};
+    new Chart(document.getElementById('monthlyChart'), {
+        type: 'bar',
+        data: { labels: months, datasets: [{ label: 'Net Revenue ($)', data: revenue, backgroundColor: '#00E5FF' }] },
+        options: { responsive: true, scales: { y: { grid: { color: '#2C3E50' } }, x: { ticks: { color: '#ccc' } } } }
+    });
+    $('#exportExcel').click(() => window.location.href = '/export/orders/');
+</script>
+{% endblock %}
